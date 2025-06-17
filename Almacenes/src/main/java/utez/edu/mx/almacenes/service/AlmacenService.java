@@ -26,7 +26,21 @@ public class AlmacenService {
         return almacenRepository.save(almacen);
     }
 
-    public void deleteById(Long id) {
-        almacenRepository.deleteById(id);
+    public Optional<Almacen> update(Long id, Almacen detalles) {
+        return almacenRepository.findById(id).map(almacen -> {
+            almacen.setClave(detalles.getClave());
+            almacen.setFechaRegistro(detalles.getFechaRegistro());
+            almacen.setPrecioVenta(detalles.getPrecioVenta());
+            almacen.setPrecioRenta(detalles.getPrecioRenta());
+            almacen.setTamano(detalles.getTamano());
+            return almacenRepository.save(almacen);
+        });
+    }
+
+    public boolean delete(Long id) {
+        return almacenRepository.findById(id).map(almacen -> {
+            almacenRepository.delete(almacen);
+            return true;
+        }).orElse(false);
     }
 }

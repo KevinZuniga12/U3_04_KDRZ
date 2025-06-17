@@ -11,12 +11,8 @@ import java.util.Optional;
 @Service
 public class CedeService {
 
-    private final CedeRepository cedeRepository;
-
     @Autowired
-    public CedeService(CedeRepository cedeRepository) {
-        this.cedeRepository = cedeRepository;
-    }
+    private CedeRepository cedeRepository;
 
     public List<Cede> findAll() {
         return cedeRepository.findAll();
@@ -30,7 +26,19 @@ public class CedeService {
         return cedeRepository.save(cede);
     }
 
-    public void deleteById(Long id) {
-        cedeRepository.deleteById(id);
+    public Optional<Cede> update(Long id, Cede cedeDetails) {
+        return cedeRepository.findById(id).map(cede -> {
+            cede.setClave(cedeDetails.getClave());
+            cede.setEstado(cedeDetails.getEstado());
+            cede.setMunicipio(cedeDetails.getMunicipio());
+            return cedeRepository.save(cede);
+        });
+    }
+
+    public boolean delete(Long id) {
+        return cedeRepository.findById(id).map(cede -> {
+            cedeRepository.delete(cede);
+            return true;
+        }).orElse(false);
     }
 }
