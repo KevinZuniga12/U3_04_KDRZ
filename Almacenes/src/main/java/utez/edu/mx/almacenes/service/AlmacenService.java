@@ -1,46 +1,22 @@
 package utez.edu.mx.almacenes.service;
 
 import utez.edu.mx.almacenes.model.Almacen;
-import utez.edu.mx.almacenes.repository.AlmacenRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Optional;
 
-@Service
-public class AlmacenService {
+public interface AlmacenService {
+    List<Almacen> findAll();
+    Optional<Almacen> findById(Long id);
+    Almacen save(Almacen almacen);
+    Optional<Almacen> update(Long id, Almacen detalles);
 
-    @Autowired
-    private AlmacenRepository almacenRepository;
+    Almacen createAlmacen(Almacen almacen);
 
-    public List<Almacen> findAll() {
-        return almacenRepository.findAll();
-    }
+    List<Almacen> getAll();
 
-    public Optional<Almacen> findById(Long id) {
-        return almacenRepository.findById(id);
-    }
+    Almacen getById(Long id);
 
-    public Almacen save(Almacen almacen) {
-        return almacenRepository.save(almacen);
-    }
+    Almacen updateAlmacen(Almacen almacen);
 
-    public Optional<Almacen> update(Long id, Almacen detalles) {
-        return almacenRepository.findById(id).map(almacen -> {
-            almacen.setClave(detalles.getClave());
-            almacen.setFechaRegistro(detalles.getFechaRegistro());
-            almacen.setPrecioVenta(detalles.getPrecioVenta());
-            almacen.setPrecioRenta(detalles.getPrecioRenta());
-            almacen.setTamano(detalles.getTamano());
-            return almacenRepository.save(almacen);
-        });
-    }
-
-    public boolean delete(Long id) {
-        return almacenRepository.findById(id).map(almacen -> {
-            almacenRepository.delete(almacen);
-            return true;
-        }).orElse(false);
-    }
+    boolean delete(Long id);
 }
