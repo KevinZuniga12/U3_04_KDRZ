@@ -1,5 +1,7 @@
 package utez.edu.mx.almacenes.controller;
 
+import jakarta.validation.Valid;
+import org.springframework.validation.BindingResult;
 import utez.edu.mx.almacenes.model.Cede;
 import utez.edu.mx.almacenes.service.CedeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,43 +9,92 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/cedes")
+@CrossOrigin(origins = "*")
 public class CedeController {
 
     @Autowired
-    private CedeService cedeService;
+    private CedeService service;
+
+    @PostMapping
+    public ResponseEntity<?> create(@Valid @RequestBody Cede cede, BindingResult result) {
+        if (result.hasErrors()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "message", "Error de validación",
+                    "errors", result.getFieldErrors().stream().map(error -> Map.of(
+                            "field", error.getField(),
+                            "error", error.getDefaultMessage()
+                    ))
+            ));
+        }
+
+        try {
+            Cede resultCede = service.createCede(cede);
+            return ResponseEntity.ok(Map.of(
+                    "message", "Cede registrada correctamente",
+                    "data", resultCede
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "message", "Error al registrar cede: " + e.getMessage()
+            ));
+        }
+    }
+
 
     @GetMapping
-    public List<Cede> getAllCedes() {
-        return cedeService.findAll();
+    public List<Cede> getAll() {
+        return service.getAllCedes();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Cede> getCedeById(@PathVariable Long id) {
-        return cedeService.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @PostMapping
-    public Cede createCede(@RequestBody Cede cede) {
-        return cedeService.save(cede);
+    public ResponseEntity<Cede> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getCedeById(id));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Cede> updateCede(@PathVariable Long id, @RequestBody Cede cedeDetails) {
-        return cedeService.update(id, cedeDetails)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody Cede updated, BindingResult result) {
+        if (result.hasErrors()) {
+            String errorMsg = result.getFieldErrors().stream()
+                    .map(e -> e.getField() + ": " + e.getDefaultMessage())
+                    .collect(Collectors.joining(" | "));
+            return ResponseEntity.badRequest().body(Map.of(
+                    "message", "Error de validación",
+                    "details", errorMsg
+            ));
+        }
+
+        try {
+            Cede cede = service.getCedeById(id);
+            cede.setEstado(updated.getEstado());
+            cede.setMunicipio(updated.getMunicipio());
+            Cede saved = service.updateCede(cede);
+            return ResponseEntity.ok(Map.of(
+                    "message", "Cede actualizada correctamente",
+                    "data", saved
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "message", "Error al actualizar cede: " + e.getMessage()
+            ));
+        }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCede(@PathVariable Long id) {
-        if (cedeService.delete(id)) {
-            return ResponseEntity.noContent().build();
+    public ResponseEntity<?> delete(@PathVariable Long id) {
+        try {
+            service.deleteCede(id);
+            return ResponseEntity.ok(Map.of(
+                    "message", "Cede eliminada correctamente"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "message", "Error al eliminar cede: " + e.getMessage()
+            ));
         }
-        return ResponseEntity.notFound().build();
     }
 }
