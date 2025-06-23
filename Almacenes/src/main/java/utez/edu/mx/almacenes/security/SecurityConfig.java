@@ -32,6 +32,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/cedes/**").permitAll()
                         .requestMatchers("/api/almacenes/**").permitAll()
                         .requestMatchers("/api/clientes/**").permitAll()
+                        .requestMatchers("/api/operaciones/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())

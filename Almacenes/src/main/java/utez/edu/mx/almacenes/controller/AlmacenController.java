@@ -21,17 +21,38 @@ public class AlmacenController {
     private AlmacenService service;
 
     @PostMapping
-    public ResponseEntity<?> create(@Valid @RequestBody Almacen almacen, BindingResult result) {
-        if (result.hasErrors()) {
-            String errorMsg = result.getFieldErrors().stream()
-                    .map(e -> e.getField() + ": " + e.getDefaultMessage())
-                    .collect(Collectors.joining(" | "));
+    public ResponseEntity<?> create(@RequestBody Almacen almacen) {
+        StringBuilder errores = new StringBuilder();
+
+        // Clave con formato tipo "AA-A123"
+        if (almacen.getClave() == null || !almacen.getClave().matches("^[A-Z]{2}-A[0-9]{1,3}$")) {
+            errores.append("Clave inválida. Debe ser tipo 'AA-A123'. | ");
+        }
+
+        // Fecha no nula
+        if (almacen.getFechaRegistro() == null) {
+            errores.append("La fecha de registro es obligatoria. | ");
+        }
+
+        // Tamaño solo 'G', 'M' o 'P'
+        if (almacen.getTamano() == null || !almacen.getTamano().matches("^[GMP]$")) {
+            errores.append("El tamaño debe ser 'G', 'M' o 'P'. | ");
+        }
+
+        // Cede no nula
+        if (almacen.getCede() == null) {
+            errores.append("La cede es obligatoria. | ");
+        }
+
+        // Si hay errores, retornar 400
+        if (!errores.toString().isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of(
                     "message", "Error de validación",
-                    "details", errorMsg
+                    "details", errores.toString()
             ));
         }
 
+        // Intentar guardar
         try {
             Almacen resultSave = service.createAlmacen(almacen);
             return ResponseEntity.ok().body(Map.of(

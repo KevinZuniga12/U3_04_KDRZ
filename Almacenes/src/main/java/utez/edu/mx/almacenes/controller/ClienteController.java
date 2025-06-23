@@ -31,29 +31,62 @@ public class ClienteController {
     }
 
     @PostMapping
-    public ResponseEntity<?> create(@Valid @RequestBody Cliente cliente, BindingResult result) {
-        if (result.hasErrors()) {
-            String errorMsg = result.getFieldErrors().stream()
-                    .map(e -> e.getField() + ": " + e.getDefaultMessage())
-                    .collect(Collectors.joining(" | "));
-            return ResponseEntity.badRequest().body(Map.of("message", "Error de validación", "details", errorMsg));
+    public ResponseEntity<?> create(@RequestBody Cliente cliente) {
+        StringBuilder errores = new StringBuilder();
+
+        if (cliente.getNombreCompleto() == null || !cliente.getNombreCompleto().matches("^[A-ZÁÉÍÓÚÑa-záéíóúñ\\s]{5,50}$")) {
+            errores.append("Nombre inválido. Solo letras y espacios, entre 5 y 50 caracteres. | ");
+        }
+
+        if (cliente.getCorreo() == null || !cliente.getCorreo().matches("^[\\w\\.-]+@[\\w\\.-]+\\.[a-zA-Z]{2,}$")) {
+            errores.append("Correo inválido. Debe tener formato de email válido. | ");
+        }
+
+        if (cliente.getTelefono() == null || !cliente.getTelefono().matches("^\\d{10}$")) {
+            errores.append("Teléfono inválido. Debe tener exactamente 10 dígitos numéricos. | ");
+        }
+
+        if (!errores.toString().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "message", "Error de validación",
+                    "details", errores.toString()
+            ));
         }
 
         try {
             Cliente saved = service.createCliente(cliente);
-            return ResponseEntity.ok(Map.of("message", "Cliente registrado correctamente", "data", saved));
+            return ResponseEntity.ok(Map.of(
+                    "message", "Cliente registrado correctamente",
+                    "data", saved
+            ));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Error al registrar cliente: " + e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of(
+                    "message", "Error al registrar cliente: " + e.getMessage()
+            ));
         }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody Cliente updated, BindingResult result) {
-        if (result.hasErrors()) {
-            String errorMsg = result.getFieldErrors().stream()
-                    .map(e -> e.getField() + ": " + e.getDefaultMessage())
-                    .collect(Collectors.joining(" | "));
-            return ResponseEntity.badRequest().body(Map.of("message", "Error de validación", "details", errorMsg));
+    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody Cliente updated) {
+        StringBuilder errores = new StringBuilder();
+
+        if (updated.getNombreCompleto() == null || !updated.getNombreCompleto().matches("^[A-ZÁÉÍÓÚÑa-záéíóúñ\\s]{5,50}$")) {
+            errores.append("Nombre inválido. Solo letras y espacios, entre 5 y 50 caracteres. | ");
+        }
+
+        if (updated.getCorreo() == null || !updated.getCorreo().matches("^[\\w\\.-]+@[\\w\\.-]+\\.[a-zA-Z]{2,}$")) {
+            errores.append("Correo inválido. Debe tener formato de email válido. | ");
+        }
+
+        if (updated.getTelefono() == null || !updated.getTelefono().matches("^\\d{10}$")) {
+            errores.append("Teléfono inválido. Debe tener exactamente 10 dígitos numéricos. | ");
+        }
+
+        if (!errores.toString().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "message", "Error de validación",
+                    "details", errores.toString()
+            ));
         }
 
         try {
@@ -62,9 +95,14 @@ public class ClienteController {
             cliente.setTelefono(updated.getTelefono());
             cliente.setCorreo(updated.getCorreo());
             Cliente saved = service.createCliente(cliente);
-            return ResponseEntity.ok(Map.of("message", "Cliente actualizado correctamente", "data", saved));
+            return ResponseEntity.ok(Map.of(
+                    "message", "Cliente actualizado correctamente",
+                    "data", saved
+            ));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Error al actualizar cliente: " + e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of(
+                    "message", "Error al actualizar cliente: " + e.getMessage()
+            ));
         }
     }
 

@@ -21,6 +21,41 @@ public class OperacionController {
 
     @PostMapping
     public ResponseEntity<?> create(@RequestBody Operacion operacion) {
+        StringBuilder errores = new StringBuilder();
+
+        // Validar monto positivo
+        if (operacion.getMonto() <= 0) {
+            errores.append("El monto debe ser un número positivo. | ");
+        }
+
+        // Validar fecha no nula y no futura
+        if (operacion.getFecha() == null) {
+            errores.append("La fecha no puede estar vacía. | ");
+        } else if (operacion.getFecha().isAfter(java.time.LocalDate.now())) {
+            errores.append("La fecha no puede ser futura. | ");
+        }
+
+        // Validar tipo de operación
+        if (operacion.getTipo() == null) {
+            errores.append("El tipo de operación es obligatorio. | ");
+        }
+
+        // Validar que cliente y almacén no sean nulos
+        if (operacion.getCliente() == null || operacion.getCliente().getId() == null) {
+            errores.append("El cliente es obligatorio y debe tener un ID válido. | ");
+        }
+
+        if (operacion.getAlmacen() == null || operacion.getAlmacen().getId() == null) {
+            errores.append("El almacén es obligatorio y debe tener un ID válido. | ");
+        }
+
+        if (!errores.toString().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "message", "Error de validación",
+                    "details", errores.toString()
+            ));
+        }
+
         try {
             Operacion result = service.registrarOperacion(operacion);
             return ResponseEntity.ok(Map.of(

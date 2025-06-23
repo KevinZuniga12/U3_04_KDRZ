@@ -21,14 +21,24 @@ public class CedeController {
     private CedeService service;
 
     @PostMapping
-    public ResponseEntity<?> create(@Valid @RequestBody Cede cede, BindingResult result) {
-        if (result.hasErrors()) {
+    public ResponseEntity<?> create(@RequestBody Cede cede) {
+        StringBuilder errores = new StringBuilder();
+
+        // Validar que el estado no esté vacío y tenga solo letras y espacios (ej: "Morelos")
+        if (cede.getEstado() == null || !cede.getEstado().matches("^[A-ZÁÉÍÓÚÑa-záéíóúñ\\s]{3,30}$")) {
+            errores.append("Estado inválido. Solo letras y espacios, entre 3 y 30 caracteres. | ");
+        }
+
+        // Validar que el municipio no esté vacío y tenga solo letras y espacios (ej: "Cuernavaca")
+        if (cede.getMunicipio() == null || !cede.getMunicipio().matches("^[A-ZÁÉÍÓÚÑa-záéíóúñ\\s]{3,30}$")) {
+            errores.append("Municipio inválido. Solo letras y espacios, entre 3 y 30 caracteres. | ");
+        }
+
+        // Si hay errores, responder con 400
+        if (!errores.toString().isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of(
                     "message", "Error de validación",
-                    "errors", result.getFieldErrors().stream().map(error -> Map.of(
-                            "field", error.getField(),
-                            "error", error.getDefaultMessage()
-                    ))
+                    "details", errores.toString()
             ));
         }
 

@@ -12,25 +12,30 @@ import java.util.List;
 public class ClienteServiceImpl implements ClienteService {
 
     @Autowired
-    private ClienteRepository repository;
+    private ClienteRepository clienteRepository;
 
     @Override
     public Cliente createCliente(Cliente cliente) {
-        return repository.save(cliente);
+        if (cliente.getId() != null) {
+            throw new IllegalArgumentException("No se debe asignar ID al crear un nuevo cliente.");
+        }
+        return clienteRepository.save(cliente);
     }
 
     @Override
     public List<Cliente> getAllClientes() {
-        return repository.findAll();
+        return clienteRepository.findAll();
     }
 
     @Override
     public Cliente getClienteById(Long id) {
-        return repository.findById(id).orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+        return clienteRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cliente no encontrado con ID: " + id));
     }
 
     @Override
     public void deleteCliente(Long id) {
-        repository.deleteById(id);
+        Cliente cliente = getClienteById(id);
+        clienteRepository.delete(cliente);
     }
 }
