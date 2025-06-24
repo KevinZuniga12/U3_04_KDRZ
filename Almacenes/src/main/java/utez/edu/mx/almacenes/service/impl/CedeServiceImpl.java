@@ -7,6 +7,8 @@ import utez.edu.mx.almacenes.repository.CedeRepository;
 import utez.edu.mx.almacenes.service.CedeService;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -19,22 +21,18 @@ public class CedeServiceImpl implements CedeService {
 
     @Override
     public Cede createCede(Cede cede) {
-        // Primero se guarda sin la clave (clave será null)
+        // 1. Guardar sin clave (temporalmente)
+        cede.setClave("TEMP"); // Evita errores por null
         Cede saved = repository.save(cede);
 
-        // Ahora que ya tiene ID, generamos la clave con el formato C[id]-[ddMMyyyy]-[4 dígitos aleatorios]
-        String fecha = new SimpleDateFormat("ddMMyyyy").format(new Date());
-        int aleatorio = new Random().nextInt(9000) + 1000;
-        String clave = "C" + saved.getId() + "-" + fecha + "-" + aleatorio;
+        // 2. Generar la clave con ID + fecha + aleatorio
+        String fecha = LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyyyy"));
+        String aleatorio = String.format("%04d", new Random().nextInt(10000)); // 0000 a 9999
+        String claveFinal = "C" + saved.getId() + "-" + fecha + "-" + aleatorio;
 
-        saved.setClave(clave);
-        return repository.save(saved); // Actualizamos la clave en BD
-    }
-
-    private String generarClaveCede(Long id) {
-        String fecha = new SimpleDateFormat("ddMMyyyy").format(new Date());
-        int aleatorio = new Random().nextInt(9000) + 1000;
-        return "C" + id + "-" + fecha + "-" + aleatorio;
+        // 3. Actualizar el registro con la clave real
+        saved.setClave(claveFinal);
+        return repository.save(saved); // Segunda persistencia con la clave ya generada
     }
 
     @Override

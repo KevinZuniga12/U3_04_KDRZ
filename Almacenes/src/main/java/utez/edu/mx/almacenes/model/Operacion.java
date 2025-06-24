@@ -34,4 +34,5 @@ public class Operacion {
 
     @Column(nullable = false)
     private LocalDate fecha;
+
 }

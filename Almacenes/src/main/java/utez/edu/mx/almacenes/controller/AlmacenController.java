@@ -24,16 +24,6 @@ public class AlmacenController {
     public ResponseEntity<?> create(@RequestBody Almacen almacen) {
         StringBuilder errores = new StringBuilder();
 
-        // Clave con formato tipo "AA-A123"
-        if (almacen.getClave() == null || !almacen.getClave().matches("^[A-Z]{2}-A[0-9]{1,3}$")) {
-            errores.append("Clave inválida. Debe ser tipo 'AA-A123'. | ");
-        }
-
-        // Fecha no nula
-        if (almacen.getFechaRegistro() == null) {
-            errores.append("La fecha de registro es obligatoria. | ");
-        }
-
         // Tamaño solo 'G', 'M' o 'P'
         if (almacen.getTamano() == null || !almacen.getTamano().matches("^[GMP]$")) {
             errores.append("El tamaño debe ser 'G', 'M' o 'P'. | ");
@@ -90,12 +80,21 @@ public class AlmacenController {
 
         try {
             Almacen almacen = service.getById(id);
+
+            if (!"DISPONIBLE".equalsIgnoreCase(almacen.getEstadoAlmacen())) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "message", "No se puede actualizar un almacén que no esté DISPONIBLE, ya que esta RENTADO o COMPRADO"
+                ));
+            }
+
+            // 🛠 Actualizar solo si está DISPONIBLE
             almacen.setPrecioVenta(updated.getPrecioVenta());
             almacen.setPrecioRenta(updated.getPrecioRenta());
             almacen.setTamano(updated.getTamano());
             almacen.setCede(updated.getCede());
 
             Almacen saved = service.updateAlmacen(almacen);
+
             return ResponseEntity.ok(Map.of(
                     "message", "Almacén actualizado correctamente",
                     "data", saved

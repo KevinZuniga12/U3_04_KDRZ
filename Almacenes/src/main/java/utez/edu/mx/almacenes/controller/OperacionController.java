@@ -28,13 +28,6 @@ public class OperacionController {
             errores.append("El monto debe ser un número positivo. | ");
         }
 
-        // Validar fecha no nula y no futura
-        if (operacion.getFecha() == null) {
-            errores.append("La fecha no puede estar vacía. | ");
-        } else if (operacion.getFecha().isAfter(java.time.LocalDate.now())) {
-            errores.append("La fecha no puede ser futura. | ");
-        }
-
         // Validar tipo de operación
         if (operacion.getTipo() == null) {
             errores.append("El tipo de operación es obligatorio. | ");

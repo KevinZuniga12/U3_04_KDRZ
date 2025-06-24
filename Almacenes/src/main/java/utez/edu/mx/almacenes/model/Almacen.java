@@ -20,7 +20,7 @@ public class Almacen {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = true, unique = true)
+    @Column(unique = true)
     private String clave; // Formato: [clave de la cede]-A[id]
 
     @Column(nullable = false)
